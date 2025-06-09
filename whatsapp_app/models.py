@@ -30,3 +30,24 @@ class MessageQueue(models.Model):
 
     def __str__(self):
         return f"{self.contact.phone} - {self.status}"
+    
+class FailedMessageAttempt(models.Model):
+    api_key = models.CharField(max_length=100)
+    phone = models.CharField(max_length=20)
+    name = models.CharField(max_length=100)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    reason = models.TextField()
+
+    def __str__(self):
+        return f"Failed attempt to {self.phone} at {self.timestamp}: {self.reason}"
+    
+class MessageSent(models.Model):
+    client_name= models.CharField(max_length=100)
+    api_key = models.CharField(max_length=100)
+    phone = models.CharField(max_length=20)
+    name = models.CharField(max_length=100)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Message sent to:client '{self.client_name} for: '{self.name}' at '{self.timestamp}'"
+

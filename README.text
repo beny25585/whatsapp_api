@@ -1,0 +1,87 @@
+# WhatsApp API System
+
+A Django system for sending WhatsApp messages with client management, contacts, message queue, and API key authentication.
+
+## ✨ Main Features
+
+- Client management with unique API keys  
+- Contact management for each client  
+- Scheduled WhatsApp message sending via `pywhatkit`  
+- Message queue system for managing outgoing messages  
+- REST API for sending messages with authentication  
+- Management command to process and send queued messages  
+
+---
+
+## Models Structure
+
+### `Client`  
+Stores information about each client in the system.  
+| Field        | Type         | Description        |  
+|--------------|--------------|--------------------|  
+| `client_name`| `CharField`  | Client's name      |  
+| `api_key`    | `CharField`  | Unique API key     |  
+
+---
+
+### `Contact`  
+Represents a contact of a client.  
+| Field     | Type         | Description                 |  
+|-----------|--------------|-----------------------------|  
+| `client`  | ForeignKey   | The client this contact belongs to |  
+| `name`    | CharField    | Contact's name               |  
+| `phone`   | CharField    | Phone number                 |  
+
+---
+
+### `MessageQueue`  
+Stores messages that are pending or have been sent.  
+| Field         | Type            | Description                                      |  
+|---------------|-----------------|-------------------------------------------------|  
+| `client`      | ForeignKey      | The sending client                               |  
+| `contact`     | ForeignKey      | The receiving contact                            |  
+| `text`        | TextField       | Message content                                 |  
+| `status`      | CharField       | Message status: `pending`, `sent`, `failed`    |  
+| `error_reason`| TextField (null)| Reason for failure, if any                       |  
+| `created_at`  | DateTime       | Message creation timestamp                        |  
+| `sent_at`     | DateTime (null)| Actual sending timestamp                          |  
+
+---
+
+## 🔌 REST API
+
+### `POST /send-message/`
+
+Sends a message by adding it to the queue.
+
+#### Request:
+
+```json
+{
+  client_name: "infinity"
+  "api_key": "123456",
+  "phone": "+972501234567",
+  "name": "Dani",
+}
+
+'whatsapp_api/ 
+├── manage.py
+├── whatsapp_api/           
+│   ├── __init__.py
+│   ├── settings.py
+│   ├── urls.py
+|   ├── asgi.py
+│   └── wsgi.py
+│
+└── whatsapp_app/               
+    ├── __init__.py
+    ├── admin.py
+    ├── apps.py
+    ├── models.py               # ← Client, Contact, MessageQueue
+    ├── serializers.py          
+    ├── views.py 
+    ├── tests.py               
+    ├── urls.py                                
+    └── management/
+        └── commands/
+            └── process_queue.py 

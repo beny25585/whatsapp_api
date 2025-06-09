@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Client,Contact,Message
+from .models import Client,Contact,MessageQueue
 
 class ClientSerializer(serializers.ModelSerializer):
     class Meta:
@@ -14,11 +14,12 @@ class ContactSerializer(serializers.ModelSerializer):
 
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Message
-        fields=['id','client','contact','massege_type','text','status','timestapm','error_reason']  
+        model = MessageQueue
+        fields=['id','client_name','contact','text','status','timestamp','error_reason']  
 
 class SendMessageSerializer(serializers.Serializer):
+    client_name = serializers.CharField(max_length=100)
     api_key = serializers.CharField(max_length=100)
     phone = serializers.CharField(max_length=20)
     name = serializers.CharField(max_length=100)
-    message_type = serializers.CharField()
+

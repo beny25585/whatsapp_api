@@ -33,7 +33,6 @@ class Migration(migrations.Migration):
             name='Message',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('massege_type', models.CharField(max_length=50)),
                 ('text', models.TextField()),
                 ('status', models.CharField(max_length=20)),
                 ('timestamp', models.DateTimeField(auto_now_add=True)),

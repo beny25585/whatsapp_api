@@ -1,24 +1,39 @@
-# app/management/commands/process_queue.py
-
 from django.core.management.base import BaseCommand
-from .models import MessageQueue
+from whatsapp_app.models import MessageQueue, FailedMessageAttempt, MessageSent
 import pywhatkit
 from django.utils import timezone
 
 class Command(BaseCommand):
-    help = 'Process WhatsApp message queue'
 
     def handle(self, *args, **kwargs):
-        pending_messages = MessageQueue.objects.get(status='pending')[:10]
+        messages_to_process = MessageQueue.objects.filter(status='pending').order_by('created_at')[:10]
 
-        for msg in pending_messages:
+        for msg in messages_to_process:
             try:
                 pywhatkit.sendwhatmsg_instantly(msg.contact.phone, msg.text)
-                msg.status = 'sent'
-                msg.sent_at = timezone.now()
-                msg.error_reason = None
+
+                MessageSent.objects.create(
+                    client_name=msg.client.client_name,
+                    api_key=msg.client.api_key,
+                    phone=msg.contact.phone,
+                    name=msg.contact.name,
+                    timestamp=timezone.now()
+                )
+
+                msg.delete()
+
+                self.stdout.write(self.style.SUCCESS(f"Sent to {msg.contact.phone}"))
+
             except Exception as e:
-                msg.status = 'failed'
-                msg.error_reason = str(e)
-            msg.save()
-            self.stdout.write(self.style.SUCCESS(f"Processed message to {msg.contact.phone} - {msg.status}"))
+                FailedMessageAttempt.objects.create(
+                    client_name=msg.client.client_name,
+                    api_key=msg.client.api_key,
+                    phone=msg.contact.phone,
+                    name=msg.contact.name,
+                    timestamp=timezone.now(),
+                    reason=str(e)
+                )
+
+                msg.delete()
+
+                self.stdout.write(self.style.ERROR(f"Failed to send to {msg.contact.phone}: {str(e)}"))
